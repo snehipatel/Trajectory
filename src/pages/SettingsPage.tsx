@@ -118,6 +118,57 @@ export default function SettingsPage() {
                 style={{ width: 80, textAlign: 'center' }}
               />
             </div>
+
+            {/* Default Lecture Duration */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>Default Lecture Duration (mins)</div>
+                <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Estimated minutes per completed lecture</div>
+              </div>
+              <input
+                className="input"
+                type="number"
+                min="5"
+                max="480"
+                value={settings.defaultLectureDuration ?? 135}
+                onChange={(e) => updateSettings({ defaultLectureDuration: parseInt(e.target.value) || 135 })}
+                style={{ width: 80, textAlign: 'center' }}
+              />
+            </div>
+
+            {/* Default DPP Duration */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>Default DPP Duration (mins)</div>
+                <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Estimated minutes per completed DPP</div>
+              </div>
+              <input
+                className="input"
+                type="number"
+                min="5"
+                max="480"
+                value={settings.defaultDppDuration ?? 45}
+                onChange={(e) => updateSettings({ defaultDppDuration: parseInt(e.target.value) || 45 })}
+                style={{ width: 80, textAlign: 'center' }}
+              />
+            </div>
+
+            {/* Default Revision Duration */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>Default Revision Duration (mins)</div>
+                <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Estimated minutes per completed revision</div>
+              </div>
+              <input
+                className="input"
+                type="number"
+                min="5"
+                max="480"
+                value={settings.defaultRevisionDuration ?? 30}
+                onChange={(e) => updateSettings({ defaultRevisionDuration: parseInt(e.target.value) || 30 })}
+                style={{ width: 80, textAlign: 'center' }}
+              />
+            </div>
           </div>
         </div>
 

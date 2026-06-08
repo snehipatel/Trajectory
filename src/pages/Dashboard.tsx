@@ -95,6 +95,7 @@ export default function Dashboard() {
   const subjects = useStore((s) => s.subjects);
   const logs = useStore((s) => s.logs);
   const revisions = useStore((s) => s.revisions);
+  const settings = useStore((s) => s.settings);
   const addCustomTask = useStore((s) => s.addCustomTask);
   const setCurrentPage = useStore((s) => s.setCurrentPage);
 
@@ -112,7 +113,13 @@ export default function Dashboard() {
   const todayLogs = useMemo(() => logs.filter((l) => l.date === today), [logs, today]);
   const lecturestoday = todayLogs.filter((l) => l.type === 'lecture').length;
   const dppsToday = todayLogs.filter((l) => l.type === 'dpp').length;
-  const studyMinutes = todayLogs.reduce((sum, l) => sum + (l.duration || 30), 0);
+  const studyMinutes = todayLogs.reduce((sum, l) => {
+    if (l.duration !== undefined) return sum + l.duration;
+    if (l.type === 'lecture') return sum + (settings.defaultLectureDuration ?? 135);
+    if (l.type === 'dpp') return sum + (settings.defaultDppDuration ?? 45);
+    if (l.type === 'revision') return sum + (settings.defaultRevisionDuration ?? 30);
+    return sum + 30;
+  }, 0);
   const studyHours = (studyMinutes / 60).toFixed(1);
 
   const activityMap = useMemo(() => getActivityByDate(logs), [logs]);

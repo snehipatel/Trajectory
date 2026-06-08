@@ -169,6 +169,9 @@ const defaultSettings: AppSettings = {
   studyHoursGoal: 8,
   revisionEnabled: true,
   notificationsEnabled: false,
+  defaultLectureDuration: 135,
+  defaultDppDuration: 45,
+  defaultRevisionDuration: 30,
 };
 
 // ---- Store ----
@@ -567,6 +570,10 @@ const useStore = create<TrajectoryState>()(
           ...currentState,
           ...persisted,
           subjects: syncedSubjects,
+          settings: {
+            ...currentState.settings,
+            ...(persisted.settings || {}),
+          },
         } as TrajectoryState;
       },
       partialize: (state) => ({

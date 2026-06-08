@@ -39,6 +39,7 @@ export default function AnalyticsPage() {
   const subjects = useStore((s) => s.subjects);
   const logs = useStore((s) => s.logs);
   const revisions = useStore((s) => s.revisions);
+  const settings = useStore((s) => s.settings);
   const [trendPeriod, setTrendPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   const today = getToday();
@@ -93,7 +94,14 @@ export default function AnalyticsPage() {
       if (log.subjectId) {
         const subject = subjects.find((s) => s.id === log.subjectId);
         const name = subject?.shortName || 'Other';
-        subjectTime[name] = (subjectTime[name] || 0) + (log.duration || 30);
+        let duration = log.duration;
+        if (duration === undefined) {
+          if (log.type === 'lecture') duration = settings.defaultLectureDuration ?? 135;
+          else if (log.type === 'dpp') duration = settings.defaultDppDuration ?? 45;
+          else if (log.type === 'revision') duration = settings.defaultRevisionDuration ?? 30;
+          else duration = 30;
+        }
+        subjectTime[name] = (subjectTime[name] || 0) + duration;
       }
     });
     return Object.entries(subjectTime)
@@ -104,7 +112,7 @@ export default function AnalyticsPage() {
         color: PIE_COLORS[i % PIE_COLORS.length],
       }))
       .sort((a, b) => b.value - a.value);
-  }, [logs, subjects]);
+  }, [logs, subjects, settings]);
 
   // ── Study Trends ──
   const trendData = useMemo(() => {

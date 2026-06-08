@@ -119,6 +119,9 @@ export interface AppSettings {
   studyHoursGoal: number; // daily hours goal
   revisionEnabled: boolean;
   notificationsEnabled: boolean;
+  defaultLectureDuration: number;
+  defaultDppDuration: number;
+  defaultRevisionDuration: number;
 }
 
 // ---- Day Summary ----
