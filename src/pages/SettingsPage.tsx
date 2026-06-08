@@ -235,7 +235,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-            A personal study tracking system designed for GATE preparation. Track lectures, DPPs, tests, revisions, and goals with detailed analytics.
+            A personal study tracking system designed for GATE preparation. Track lectures, DPPs, revisions, and goals with detailed analytics.
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 8 }}>
             All data is stored locally in your browser. Use Export to back up your progress.

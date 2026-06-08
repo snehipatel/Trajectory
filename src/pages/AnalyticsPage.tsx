@@ -169,9 +169,8 @@ export default function AnalyticsPage() {
       totalDpp += c.dpps.length;
       compDpp += c.dpps.filter((d) => d.completed).length;
     }));
-    const tests = logs.filter((l) => l.type === 'test').length;
     const tasks = logs.filter((l) => l.type === 'task').length;
-    return { totalLec, compLec, totalDpp, compDpp, tests, tasks };
+    return { totalLec, compLec, totalDpp, compDpp, tasks };
   }, [subjects, logs]);
 
   // ── Subject Readiness Radar ──
@@ -203,11 +202,10 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Completion Stats */}
-      <motion.div className="grid-stats" variants={fadeUp} initial="hidden" animate="show" style={{ marginBottom: 24 }}>
+      <motion.div className="grid-stats" variants={fadeUp} initial="hidden" animate="show" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 24 }}>
         {[
           { label: 'Lectures Completed', value: `${completionStats.compLec}/${completionStats.totalLec}`, icon: BookOpen, bg: '#EEF2FF', color: '#6366F1' },
           { label: 'DPPs Completed', value: `${completionStats.compDpp}/${completionStats.totalDpp}`, icon: FileText, bg: '#F5F3FF', color: '#8B5CF6' },
-          { label: 'Tests Taken', value: completionStats.tests, icon: ClipboardCheck, bg: '#FFFBEB', color: '#D97706' },
           { label: 'Custom Tasks', value: completionStats.tasks, icon: CheckSquare, bg: '#ECFDF5', color: '#059669' },
         ].map((stat) => {
           const Icon = stat.icon;

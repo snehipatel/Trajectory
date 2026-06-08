@@ -213,7 +213,6 @@ export default function GoalsPage() {
                     <select className="select" value={goalForm.category} onChange={(e) => setGoalForm((f) => ({ ...f, category: e.target.value as any }))}>
                       <option value="lectures">Lectures</option>
                       <option value="dpps">DPPs</option>
-                      <option value="tests">Tests</option>
                       <option value="tasks">Tasks</option>
                       <option value="custom">Custom</option>
                     </select>

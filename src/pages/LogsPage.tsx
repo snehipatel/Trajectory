@@ -20,7 +20,6 @@ import type { LogEntry, LogEntryType } from '@/types';
 const typeIcons: Record<LogEntryType, React.FC<{ size?: number; style?: React.CSSProperties }>> = {
   lecture: BookOpen,
   dpp: FileText,
-  test: ClipboardCheck,
   task: CheckSquare,
   revision: RefreshCw,
 };
@@ -28,7 +27,6 @@ const typeIcons: Record<LogEntryType, React.FC<{ size?: number; style?: React.CS
 const typeColors: Record<LogEntryType, string> = {
   lecture: '#6366F1',
   dpp: '#8B5CF6',
-  test: '#D97706',
   task: '#059669',
   revision: '#3B82F6',
 };
@@ -36,7 +34,6 @@ const typeColors: Record<LogEntryType, string> = {
 const typeBadgeClass: Record<LogEntryType, string> = {
   lecture: 'badge-blue',
   dpp: 'badge-purple',
-  test: 'badge-amber',
   task: 'badge-green',
   revision: 'badge-blue',
 };
@@ -144,7 +141,6 @@ export default function LogsPage() {
                     <option value="all">All Types</option>
                     <option value="lecture">Lectures</option>
                     <option value="dpp">DPPs</option>
-                    <option value="test">Tests</option>
                     <option value="task">Tasks</option>
                     <option value="revision">Revisions</option>
                   </select>

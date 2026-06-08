@@ -38,23 +38,11 @@ export interface Subject {
   notes?: string;
 }
 
-// ---- Weekly Tests ----
 
-export interface WeeklyTest {
-  id: string;
-  name: string;
-  date: string; // ISO date
-  subjectId?: string;
-  marks: number;
-  totalMarks: number;
-  accuracy: number; // percentage
-  rank?: number;
-  notes?: string;
-}
 
 // ---- Study Logs ----
 
-export type LogEntryType = 'lecture' | 'dpp' | 'test' | 'task' | 'revision';
+export type LogEntryType = 'lecture' | 'dpp' | 'task' | 'revision';
 
 export interface LogEntry {
   id: string;
@@ -102,7 +90,7 @@ export interface Goal {
   period: GoalPeriod;
   targetCount: number;
   currentCount: number;
-  category: 'lectures' | 'dpps' | 'tests' | 'tasks' | 'custom';
+  category: 'lectures' | 'dpps' | 'tasks' | 'custom';
   subjectId?: string;
   startDate: string;
   endDate: string;
@@ -139,7 +127,6 @@ export interface DaySummary {
   date: string; // YYYY-MM-DD
   lecturesCompleted: number;
   dppsCompleted: number;
-  testsCompleted: number;
   tasksCompleted: number;
   totalStudyMinutes: number;
   entries: LogEntry[];

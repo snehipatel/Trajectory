@@ -7,7 +7,6 @@ import { persist } from 'zustand/middleware';
 import type {
   Subject,
   LogEntry,
-  WeeklyTest,
   Revision,
   Goal,
   Note,
@@ -88,7 +87,6 @@ interface TrajectoryState {
   // Data
   subjects: Subject[];
   logs: LogEntry[];
-  weeklyTests: WeeklyTest[];
   revisions: Revision[];
   goals: Goal[];
   notes: Note[];
@@ -115,9 +113,7 @@ interface TrajectoryState {
   }) => void;
   deleteLogEntry: (id: string) => void;
 
-  // Weekly Test Actions
-  addWeeklyTest: (test: Omit<WeeklyTest, 'id'>) => void;
-  deleteWeeklyTest: (id: string) => void;
+
 
   // Revision Actions
   generateRevisions: (
@@ -183,7 +179,6 @@ const useStore = create<TrajectoryState>()(
       // Initial Data
       subjects: initializeSeedData(),
       logs: [],
-      weeklyTests: [],
       revisions: [],
       goals: [],
       notes: [],
@@ -340,29 +335,6 @@ const useStore = create<TrajectoryState>()(
         }));
       },
 
-      // ── Weekly Test Actions ──
-
-      addWeeklyTest: (test) => {
-        const newTest: WeeklyTest = { ...test, id: generateId() };
-        set((state) => ({
-          weeklyTests: [newTest, ...state.weeklyTests],
-        }));
-        // Also add a log entry
-        get().addLogEntry({
-          type: 'test',
-          date: test.date,
-          subjectId: test.subjectId,
-          title: `Test: ${test.name}`,
-          description: `Score: ${test.marks}/${test.totalMarks} (${test.accuracy}%)`,
-        });
-      },
-
-      deleteWeeklyTest: (id) => {
-        set((state) => ({
-          weeklyTests: state.weeklyTests.filter((t) => t.id !== id),
-        }));
-      },
-
       // ── Revision Actions ──
 
       generateRevisions: (
@@ -514,7 +486,6 @@ const useStore = create<TrajectoryState>()(
         const data = {
           subjects: state.subjects,
           logs: state.logs,
-          weeklyTests: state.weeklyTests,
           revisions: state.revisions,
           goals: state.goals,
           notes: state.notes,
@@ -532,7 +503,6 @@ const useStore = create<TrajectoryState>()(
           set({
             subjects: syncedSubjects,
             logs: data.logs || [],
-            weeklyTests: data.weeklyTests || [],
             revisions: data.revisions || [],
             goals: data.goals || [],
             notes: data.notes || [],
@@ -547,7 +517,6 @@ const useStore = create<TrajectoryState>()(
         set({
           subjects: initializeSeedData(),
           logs: [],
-          weeklyTests: [],
           revisions: [],
           goals: [],
           notes: [],
@@ -603,7 +572,6 @@ const useStore = create<TrajectoryState>()(
       partialize: (state) => ({
         subjects: state.subjects,
         logs: state.logs,
-        weeklyTests: state.weeklyTests,
         revisions: state.revisions,
         goals: state.goals,
         notes: state.notes,

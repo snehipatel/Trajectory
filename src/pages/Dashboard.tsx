@@ -112,7 +112,6 @@ export default function Dashboard() {
   const todayLogs = useMemo(() => logs.filter((l) => l.date === today), [logs, today]);
   const lecturestoday = todayLogs.filter((l) => l.type === 'lecture').length;
   const dppsToday = todayLogs.filter((l) => l.type === 'dpp').length;
-  const testsToday = todayLogs.filter((l) => l.type === 'test').length;
   const studyMinutes = todayLogs.reduce((sum, l) => sum + (l.duration || 30), 0);
   const studyHours = (studyMinutes / 60).toFixed(1);
 
@@ -320,11 +319,10 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <motion.div className="grid-stats" variants={stagger} initial="hidden" animate="show" style={{ marginBottom: 24 }}>
+      <motion.div className="grid-stats" variants={stagger} initial="hidden" animate="show" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 24 }}>
         {[
           { label: 'Lectures Today', value: lecturestoday, icon: BookOpen, bg: '#EEF2FF', iconColor: '#6366F1' },
           { label: 'DPPs Today', value: dppsToday, icon: FileText, bg: '#F5F3FF', iconColor: '#8B5CF6' },
-          { label: 'Tests Today', value: testsToday, icon: ClipboardCheck, bg: '#FFFBEB', iconColor: '#D97706' },
           { label: 'Study Hours', value: studyHours, icon: Clock, bg: '#ECFDF5', iconColor: '#059669' },
         ].map((stat) => {
           const Icon = stat.icon;

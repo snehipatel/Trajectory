@@ -26,7 +26,6 @@ const levelColors = ['#FEE2E2', '#FEF3C7', '#DBEAFE', '#BBF7D0'];
 const typeIcons = {
   lecture: BookOpen,
   dpp: FileText,
-  test: ClipboardCheck,
   task: CheckSquare,
   revision: Clock,
 };
@@ -210,11 +209,10 @@ export default function CalendarPage() {
               </div>
 
               {/* Summary Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
                 {[
                   { label: 'Lectures', count: selectedDayLogs.filter((l) => l.type === 'lecture').length, color: '#6366F1' },
                   { label: 'DPPs', count: selectedDayLogs.filter((l) => l.type === 'dpp').length, color: '#8B5CF6' },
-                  { label: 'Tests', count: selectedDayLogs.filter((l) => l.type === 'test').length, color: '#D97706' },
                   { label: 'Tasks', count: selectedDayLogs.filter((l) => l.type === 'task').length, color: '#059669' },
                 ].map((s) => (
                   <div key={s.label} style={{ padding: '10px 14px', background: 'var(--color-bg-hover)', borderRadius: 10, textAlign: 'center' }}>
@@ -242,7 +240,7 @@ export default function CalendarPage() {
                           <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{log.description}</div>
                         )}
                       </div>
-                      <span className={`badge badge-${log.type === 'lecture' ? 'blue' : log.type === 'dpp' ? 'purple' : log.type === 'test' ? 'amber' : 'green'}`}>
+                      <span className={`badge badge-${log.type === 'lecture' ? 'blue' : log.type === 'dpp' ? 'purple' : 'green'}`}>
                         {log.type}
                       </span>
                     </div>
