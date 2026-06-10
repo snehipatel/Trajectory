@@ -13,6 +13,7 @@ import {
   Lightbulb,
   ChevronRight,
   Calendar,
+  CheckCircle,
 } from 'lucide-react';
 import {
   BarChart,
@@ -100,6 +101,7 @@ export default function Dashboard() {
   const setCurrentPage = useStore((s) => s.setCurrentPage);
 
   const [showAddTask, setShowAddTask] = useState(false);
+  const [showStatDetail, setShowStatDetail] = useState<'lectures' | 'dpps' | null>(null);
   const [taskForm, setTaskForm] = useState({
     title: '',
     category: 'Revision',
@@ -111,8 +113,10 @@ export default function Dashboard() {
 
   // ── Computed Values ──
   const todayLogs = useMemo(() => logs.filter((l) => l.date === today), [logs, today]);
-  const lecturestoday = todayLogs.filter((l) => l.type === 'lecture').length;
-  const dppsToday = todayLogs.filter((l) => l.type === 'dpp').length;
+  const todayLectureLogs = useMemo(() => todayLogs.filter((l) => l.type === 'lecture'), [todayLogs]);
+  const todayDppLogs = useMemo(() => todayLogs.filter((l) => l.type === 'dpp'), [todayLogs]);
+  const lecturestoday = todayLectureLogs.length;
+  const dppsToday = todayDppLogs.length;
   const studyMinutes = todayLogs.reduce((sum, l) => {
     if (l.duration !== undefined) return sum + l.duration;
     if (l.type === 'lecture') return sum + (settings.defaultLectureDuration ?? 135);
@@ -328,13 +332,21 @@ export default function Dashboard() {
       {/* Stats Cards */}
       <motion.div className="grid-stats" variants={stagger} initial="hidden" animate="show" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 24 }}>
         {[
-          { label: 'Lectures Today', value: lecturestoday, icon: BookOpen, bg: '#EEF2FF', iconColor: '#6366F1' },
-          { label: 'DPPs Today', value: dppsToday, icon: FileText, bg: '#F5F3FF', iconColor: '#8B5CF6' },
-          { label: 'Study Hours', value: studyHours, icon: Clock, bg: '#ECFDF5', iconColor: '#059669' },
+          { label: 'Lectures Today', value: lecturestoday, icon: BookOpen, bg: '#EEF2FF', iconColor: '#6366F1', clickable: true as const, onClick: () => setShowStatDetail('lectures') },
+          { label: 'DPPs Today', value: dppsToday, icon: FileText, bg: '#F5F3FF', iconColor: '#8B5CF6', clickable: true as const, onClick: () => setShowStatDetail('dpps') },
+          { label: 'Study Hours', value: studyHours, icon: Clock, bg: '#ECFDF5', iconColor: '#059669', clickable: false as const, onClick: undefined },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
-            <motion.div key={stat.label} className="stat-card" variants={fadeUp}>
+            <motion.div
+              key={stat.label}
+              className="stat-card"
+              variants={fadeUp}
+              style={stat.clickable ? { cursor: 'pointer' } : undefined}
+              onClick={stat.onClick}
+              whileHover={stat.clickable ? { scale: 1.03 } : undefined}
+              whileTap={stat.clickable ? { scale: 0.98 } : undefined}
+            >
               <div className="stat-icon" style={{ background: stat.bg }}>
                 <Icon size={22} style={{ color: stat.iconColor }} />
               </div>
@@ -647,6 +659,90 @@ export default function Dashboard() {
                   <Plus size={16} /> Add Task
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Stat Detail Modal (Lectures / DPPs Today) */}
+      <AnimatePresence>
+        {showStatDetail && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowStatDetail(null)}
+          >
+            <motion.div
+              className="modal-content"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: 520 }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+                  {showStatDetail === 'lectures' ? `Lectures Completed Today (${todayLectureLogs.length})` : `DPPs Completed Today (${todayDppLogs.length})`}
+                </h2>
+                <button className="btn btn-ghost btn-sm" onClick={() => setShowStatDetail(null)}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              {(() => {
+                const items = showStatDetail === 'lectures' ? todayLectureLogs : todayDppLogs;
+                if (items.length === 0) {
+                  return (
+                    <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                      <div style={{ fontSize: 40, marginBottom: 12 }}>{showStatDetail === 'lectures' ? '📖' : '📝'}</div>
+                      <p style={{ color: 'var(--color-text-muted)', fontSize: 14, margin: 0 }}>
+                        No {showStatDetail === 'lectures' ? 'lectures' : 'DPPs'} completed today yet.
+                      </p>
+                      <p style={{ color: 'var(--color-text-muted)', fontSize: 13, margin: '6px 0 0' }}>
+                        Head to Subjects to start studying!
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 400, overflowY: 'auto' }}>
+                    {items.map((log, i) => (
+                      <motion.div
+                        key={log.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          padding: '12px 14px',
+                          background: 'var(--color-bg-hover)',
+                          borderRadius: 12,
+                        }}
+                      >
+                        <CheckCircle size={18} style={{ color: '#10B981', flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {log.title.replace(/^Completed:\s*/, '')}
+                          </div>
+                          {log.description && (
+                            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {log.description}
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                          {new Date(log.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                );
+              })()}
             </motion.div>
           </motion.div>
         )}
