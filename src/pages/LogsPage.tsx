@@ -25,10 +25,10 @@ const typeIcons: Record<LogEntryType, React.FC<{ size?: number; style?: React.CS
 };
 
 const typeColors: Record<LogEntryType, string> = {
-  lecture: '#6366F1',
-  dpp: '#8B5CF6',
-  task: '#059669',
-  revision: '#3B82F6',
+  lecture: '#818CF8',
+  dpp: '#A855F7',
+  task: '#34D399',
+  revision: '#22D3EE',
 };
 
 const typeBadgeClass: Record<LogEntryType, string> = {

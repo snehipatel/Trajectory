@@ -61,7 +61,7 @@ export default function RevisionPage() {
         width: 40,
         height: 40,
         borderRadius: 10,
-        background: `${rev.revisionNumber === 1 ? '#DBEAFE' : rev.revisionNumber === 2 ? '#E0E7FF' : '#EDE9FE'}`,
+        background: `${rev.revisionNumber === 1 ? 'rgba(59,130,246,0.12)' : rev.revisionNumber === 2 ? 'rgba(99,102,241,0.12)' : 'rgba(139,92,246,0.12)'}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -86,7 +86,7 @@ export default function RevisionPage() {
         <div style={{ display: 'flex', gap: 6 }}>
           <button
             className="btn btn-sm"
-            style={{ background: '#ECFDF5', color: '#059669', padding: '6px 10px' }}
+            style={{ background: 'rgba(52, 211, 153, 0.12)', color: '#34D399', padding: '6px 10px' }}
             onClick={() => completeRevision(rev.id)}
             title="Mark as completed"
           >
@@ -94,7 +94,7 @@ export default function RevisionPage() {
           </button>
           <button
             className="btn btn-sm"
-            style={{ background: '#FEF2F2', color: '#DC2626', padding: '6px 10px' }}
+            style={{ background: 'rgba(248, 113, 113, 0.12)', color: '#F87171', padding: '6px 10px' }}
             onClick={() => missRevision(rev.id)}
             title="Mark as missed"
           >

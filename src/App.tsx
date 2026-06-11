@@ -11,21 +11,9 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import RevisionPage from './pages/RevisionPage';
 import GoalsPage from './pages/GoalsPage';
 import SettingsPage from './pages/SettingsPage';
+import UniversePage from './pages/UniversePage';
 import useStore from './store/useStore';
 import type { PageId } from './types';
-
-// Universe placeholder until Phase 3
-function UniversePlaceholder() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>🌌</div>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Universe View</h1>
-        <p style={{ color: 'var(--color-text-muted)' }}>Coming soon — your personal galaxy awaits.</p>
-      </div>
-    </div>
-  );
-}
 
 const pageComponents: Record<PageId, React.FC> = {
   dashboard: Dashboard,
@@ -35,7 +23,7 @@ const pageComponents: Record<PageId, React.FC> = {
   analytics: AnalyticsPage,
   revision: RevisionPage,
   goals: GoalsPage,
-  universe: UniversePlaceholder,
+  universe: UniversePage,
   settings: SettingsPage,
 };
 
