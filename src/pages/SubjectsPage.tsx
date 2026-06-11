@@ -2,8 +2,6 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight,
-  ChevronDown,
-  ChevronLeft,
   Check,
   BookOpen,
   FileText,
@@ -12,66 +10,67 @@ import {
 import useStore from '@/store/useStore';
 import type { Subject } from '@/types';
 import { percentOf } from '@/lib/utils';
+import PlanetRenderer from '@/components/space/PlanetRenderer';
+import ConstellationView from '@/components/space/ConstellationView';
 
-// ── Subject Card ──
+// ── Planet Subject Card ──
 function SubjectCard({ subject, onClick }: { subject: Subject; onClick: () => void }) {
   const totalLectures = subject.chapters.reduce((s, c) => s + c.lectures.length, 0);
-  const completedLectures = subject.chapters.reduce(
-    (s, c) => s + c.lectures.filter((l) => l.completed).length,
-    0
-  );
+  const completedLectures = subject.chapters.reduce((s, c) => s + c.lectures.filter((l) => l.completed).length, 0);
   const totalDpps = subject.chapters.reduce((s, c) => s + c.dpps.length, 0);
-  const completedDpps = subject.chapters.reduce(
-    (s, c) => s + c.dpps.filter((d) => d.completed).length,
-    0
-  );
+  const completedDpps = subject.chapters.reduce((s, c) => s + c.dpps.filter((d) => d.completed).length, 0);
   const total = totalLectures + totalDpps;
   const completed = completedLectures + completedDpps;
   const pct = percentOf(completed, total);
 
   return (
     <motion.div
-      className="card card-interactive card-compact"
+      className="card card-interactive"
       onClick={onClick}
-      whileHover={{ y: -2 }}
-      style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}
+      whileHover={{ y: -3, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 12,
+        padding: '24px 16px',
+        cursor: 'pointer',
+        textAlign: 'center',
+      }}
     >
-      <div
-        style={{
-          width: 42,
-          height: 42,
-          borderRadius: 12,
-          background: subject.color + '18',
-          color: subject.color,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 700,
-          fontSize: 14,
-          flexShrink: 0,
-        }}
-      >
-        {subject.shortName}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <PlanetRenderer
+        subjectName={subject.name}
+        color={subject.color}
+        size={90}
+        completion={pct}
+        showOrbit={true}
+        animated={true}
+      />
+      <div style={{ marginTop: 4 }}>
+        <div style={{
+          fontWeight: 600,
+          fontSize: 13,
+          color: 'var(--color-text-primary)',
+          lineHeight: 1.3,
+          maxWidth: 140,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+        }}>
           {subject.name}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-          <div className="progress-bar" style={{ flex: 1, height: 6 }}>
-            <div className="progress-bar-fill" style={{ width: `${pct}%`, background: subject.color }} />
-          </div>
-          <span style={{ fontSize: 12, fontWeight: 600, color: subject.color, minWidth: 36, textAlign: 'right' }}>
-            {pct}%
-          </span>
+        <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 4 }}>
+          {completedLectures}/{totalLectures} lectures · {completedDpps}/{totalDpps} DPPs
         </div>
       </div>
-      <ChevronRight size={18} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
     </motion.div>
   );
 }
 
-// ── Chapter Tree ──
+// ── Chapter Tree (dark glass) ──
 function ChapterTree({ subject }: { subject: Subject }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const toggleLecture = useStore((s) => s.toggleLecture);
@@ -92,21 +91,27 @@ function ChapterTree({ subject }: { subject: Subject }) {
         const lecCompleted = chapter.lectures.filter((l) => l.completed).length;
         const dppCompleted = chapter.dpps.filter((d) => d.completed).length;
         const isExpanded = expanded[chapter.id] ?? false;
+        const totalItems = chapter.lectures.length + chapter.dpps.length;
+        const completedItems = lecCompleted + dppCompleted;
+        const allDone = totalItems > 0 && completedItems === totalItems;
 
         return (
-          <div key={chapter.id} className="tree-node card" style={{ padding: 0, overflow: 'hidden' }}>
-            {/* Chapter Header */}
+          <div key={chapter.id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <div
               className="tree-node-header"
               onClick={() => toggle(chapter.id)}
               style={{ padding: '14px 16px', cursor: 'pointer' }}
             >
-              <motion.div
-                animate={{ rotate: isExpanded ? 90 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
                 <ChevronRight size={16} style={{ color: 'var(--color-text-muted)' }} />
               </motion.div>
+              {/* Star indicator */}
+              <div style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: allDone ? subject.color : completedItems > 0 ? `${subject.color}60` : 'rgba(148,163,184,0.2)',
+                boxShadow: allDone ? `0 0 6px ${subject.color}` : 'none',
+                flexShrink: 0,
+              }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--color-text-primary)' }}>
                   {chapter.name}
@@ -120,14 +125,13 @@ function ChapterTree({ subject }: { subject: Subject }) {
                 <div
                   className="progress-bar-fill"
                   style={{
-                    width: `${percentOf(lecCompleted + dppCompleted, chapter.lectures.length + chapter.dpps.length)}%`,
+                    width: `${percentOf(completedItems, totalItems)}%`,
                     background: subject.color,
                   }}
                 />
               </div>
             </div>
 
-            {/* Expanded Content */}
             <AnimatePresence>
               {isExpanded && (
                 <motion.div
@@ -138,7 +142,6 @@ function ChapterTree({ subject }: { subject: Subject }) {
                   style={{ overflow: 'hidden' }}
                 >
                   <div style={{ padding: '0 16px 16px 44px' }}>
-                    {/* Lectures */}
                     {chapter.lectures.length > 0 && (
                       <div style={{ marginBottom: chapter.dpps.length > 0 ? 16 : 0 }}>
                         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
@@ -148,32 +151,23 @@ function ChapterTree({ subject }: { subject: Subject }) {
                           <motion.div
                             key={lecture.id}
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 10,
-                              padding: '8px 10px',
-                              borderRadius: 8,
-                              cursor: 'pointer',
-                              transition: 'background 0.1s',
+                              display: 'flex', alignItems: 'center', gap: 10,
+                              padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
                             }}
                             onClick={() => toggleLecture(subject.id, chapter.id, lecture.id)}
                             whileTap={{ scale: 0.98 }}
                             className="tree-node-header"
                           >
-                            <div
-                              className={`checkbox-custom ${lecture.completed ? 'checked' : ''}`}
-                            >
+                            <div className={`checkbox-custom ${lecture.completed ? 'checked' : ''}`}>
                               {lecture.completed && <Check size={12} color="#fff" />}
                             </div>
                             <BookOpen size={14} style={{ color: lecture.completed ? 'var(--color-accent-green)' : 'var(--color-text-muted)' }} />
-                            <span
-                              style={{
-                                fontSize: 14,
-                                color: lecture.completed ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
-                                textDecoration: lecture.completed ? 'line-through' : 'none',
-                                flex: 1,
-                              }}
-                            >
+                            <span style={{
+                              fontSize: 14,
+                              color: lecture.completed ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
+                              textDecoration: lecture.completed ? 'line-through' : 'none',
+                              flex: 1,
+                            }}>
                               {lecture.name}
                             </span>
                             {lecture.completed && lecture.completedAt && (
@@ -186,7 +180,6 @@ function ChapterTree({ subject }: { subject: Subject }) {
                       </div>
                     )}
 
-                    {/* DPPs */}
                     {chapter.dpps.length > 0 && (
                       <div>
                         <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
@@ -196,12 +189,8 @@ function ChapterTree({ subject }: { subject: Subject }) {
                           <motion.div
                             key={dpp.id}
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 10,
-                              padding: '8px 10px',
-                              borderRadius: 8,
-                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: 10,
+                              padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
                             }}
                             onClick={() => toggleDpp(subject.id, chapter.id, dpp.id)}
                             whileTap={{ scale: 0.98 }}
@@ -209,19 +198,17 @@ function ChapterTree({ subject }: { subject: Subject }) {
                           >
                             <div
                               className={`checkbox-custom ${dpp.completed ? 'checked' : ''}`}
-                              style={{ borderColor: dpp.completed ? '#8B5CF6' : undefined, background: dpp.completed ? '#8B5CF6' : undefined }}
+                              style={{ borderColor: dpp.completed ? '#A855F7' : undefined, background: dpp.completed ? '#A855F7' : undefined }}
                             >
                               {dpp.completed && <Check size={12} color="#fff" />}
                             </div>
-                            <FileText size={14} style={{ color: dpp.completed ? '#8B5CF6' : 'var(--color-text-muted)' }} />
-                            <span
-                              style={{
-                                fontSize: 14,
-                                color: dpp.completed ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
-                                textDecoration: dpp.completed ? 'line-through' : 'none',
-                                flex: 1,
-                              }}
-                            >
+                            <FileText size={14} style={{ color: dpp.completed ? '#A855F7' : 'var(--color-text-muted)' }} />
+                            <span style={{
+                              fontSize: 14,
+                              color: dpp.completed ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
+                              textDecoration: dpp.completed ? 'line-through' : 'none',
+                              flex: 1,
+                            }}>
                               {dpp.name}
                             </span>
                             {dpp.completed && dpp.completedAt && (
@@ -251,62 +238,37 @@ export default function SubjectsPage() {
 
   const activeSubject = subjects.find((s) => s.id === selectedSubject);
 
-  // Stats
-  const totalLectures = subjects.reduce(
-    (sum, s) => sum + s.chapters.reduce((cs, c) => cs + c.lectures.length, 0),
-    0
-  );
-  const completedLectures = subjects.reduce(
-    (sum, s) => sum + s.chapters.reduce((cs, c) => cs + c.lectures.filter((l) => l.completed).length, 0),
-    0
-  );
+  const totalLectures = subjects.reduce((sum, s) => sum + s.chapters.reduce((cs, c) => cs + c.lectures.length, 0), 0);
+  const completedLectures = subjects.reduce((sum, s) => sum + s.chapters.reduce((cs, c) => cs + c.lectures.filter((l) => l.completed).length, 0), 0);
 
   if (activeSubject) {
     const subjectTotal = activeSubject.chapters.reduce((s, c) => s + c.lectures.length, 0);
-    const subjectCompleted = activeSubject.chapters.reduce(
-      (s, c) => s + c.lectures.filter((l) => l.completed).length,
-      0
-    );
+    const subjectCompleted = activeSubject.chapters.reduce((s, c) => s + c.lectures.filter((l) => l.completed).length, 0);
     const subjectDppTotal = activeSubject.chapters.reduce((s, c) => s + c.dpps.length, 0);
-    const subjectDppCompleted = activeSubject.chapters.reduce(
-      (s, c) => s + c.dpps.filter((d) => d.completed).length,
-      0
-    );
-    const overallPct = percentOf(
-      subjectCompleted + subjectDppCompleted,
-      subjectTotal + subjectDppTotal
-    );
+    const subjectDppCompleted = activeSubject.chapters.reduce((s, c) => s + c.dpps.filter((d) => d.completed).length, 0);
+    const overallPct = percentOf(subjectCompleted + subjectDppCompleted, subjectTotal + subjectDppTotal);
 
     return (
       <div>
         <div className="page-header">
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => setSelectedSubject(null)}
-            style={{ marginBottom: 12 }}
-          >
+          <button className="btn btn-ghost btn-sm" onClick={() => setSelectedSubject(null)} style={{ marginBottom: 16 }}>
             <ArrowLeft size={16} /> Back to Subjects
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: 14,
-                background: activeSubject.color + '18',
-                color: activeSubject.color,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: 18,
-              }}
-            >
-              {activeSubject.shortName}
-            </div>
-            <div>
+
+          {/* Planet + Subject Info */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+            <PlanetRenderer
+              subjectName={activeSubject.name}
+              color={activeSubject.color}
+              size={140}
+              completion={overallPct}
+              showOrbit={true}
+              showLabel={false}
+              animated={true}
+            />
+            <div style={{ textAlign: 'center' }}>
               <h1 style={{ margin: 0 }}>{activeSubject.name}</h1>
-              <p className="page-subtitle">{activeSubject.chapters.length} chapters</p>
+              <p className="page-subtitle">{activeSubject.chapters.length} chapters · Orbit: {overallPct}%</p>
             </div>
           </div>
         </div>
@@ -314,8 +276,8 @@ export default function SubjectsPage() {
         {/* Stats Row */}
         <div className="grid-stats" style={{ marginBottom: 24 }}>
           <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#EEF2FF' }}>
-              <BookOpen size={20} style={{ color: '#6366F1' }} />
+            <div className="stat-icon" style={{ background: 'rgba(129, 140, 248, 0.1)' }}>
+              <BookOpen size={20} style={{ color: '#818CF8' }} />
             </div>
             <div>
               <div className="stat-value" style={{ fontSize: 22 }}>{subjectCompleted}/{subjectTotal}</div>
@@ -323,8 +285,8 @@ export default function SubjectsPage() {
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#F5F3FF' }}>
-              <FileText size={20} style={{ color: '#8B5CF6' }} />
+            <div className="stat-icon" style={{ background: 'rgba(168, 85, 247, 0.1)' }}>
+              <FileText size={20} style={{ color: '#A855F7' }} />
             </div>
             <div>
               <div className="stat-value" style={{ fontSize: 22 }}>{subjectDppCompleted}/{subjectDppTotal}</div>
@@ -332,8 +294,8 @@ export default function SubjectsPage() {
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#ECFDF5' }}>
-              <Check size={20} style={{ color: '#059669' }} />
+            <div className="stat-icon" style={{ background: 'rgba(52, 211, 153, 0.1)' }}>
+              <Check size={20} style={{ color: '#34D399' }} />
             </div>
             <div>
               <div className="stat-value" style={{ fontSize: 22 }}>{overallPct}%</div>
@@ -341,8 +303,8 @@ export default function SubjectsPage() {
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#FFFBEB' }}>
-              <ChevronDown size={20} style={{ color: '#D97706' }} />
+            <div className="stat-icon" style={{ background: 'rgba(251, 191, 36, 0.1)' }}>
+              <ChevronRight size={20} style={{ color: '#FBBF24' }} />
             </div>
             <div>
               <div className="stat-value" style={{ fontSize: 22 }}>{activeSubject.chapters.length}</div>
@@ -351,16 +313,19 @@ export default function SubjectsPage() {
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="card" style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>Overall Progress</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: activeSubject.color }}>{overallPct}%</span>
+        {/* Constellation View */}
+        {activeSubject.chapters.length > 0 && (
+          <div className="card" style={{ marginBottom: 24 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 12px 0' }}>Chapter Constellation</h3>
+            <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '0 0 16px 0' }}>
+              Bright stars = completed chapters · Dim stars = in progress
+            </p>
+            <ConstellationView
+              chapters={activeSubject.chapters}
+              subjectColor={activeSubject.color}
+            />
           </div>
-          <div className="progress-bar" style={{ height: 10 }}>
-            <div className="progress-bar-fill" style={{ width: `${overallPct}%`, background: activeSubject.color }} />
-          </div>
-        </div>
+        )}
 
         {/* Chapter Tree */}
         <ChapterTree subject={activeSubject} />
@@ -377,12 +342,11 @@ export default function SubjectsPage() {
         </p>
       </div>
 
-      <motion.div
-        className="grid-3"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ staggerChildren: 0.05 }}
-      >
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+        gap: 16,
+      }}>
         {subjects.map((subject) => (
           <SubjectCard
             key={subject.id}
@@ -390,7 +354,7 @@ export default function SubjectsPage() {
             onClick={() => setSelectedSubject(subject.id)}
           />
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
