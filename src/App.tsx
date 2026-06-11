@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import StarfieldBackground from './components/space/StarfieldBackground';
 import Sidebar from './components/layout/Sidebar';
 import CommandPalette from './components/layout/CommandPalette';
 import Dashboard from './pages/Dashboard';
@@ -13,6 +14,19 @@ import SettingsPage from './pages/SettingsPage';
 import useStore from './store/useStore';
 import type { PageId } from './types';
 
+// Universe placeholder until Phase 3
+function UniversePlaceholder() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🌌</div>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Universe View</h1>
+        <p style={{ color: 'var(--color-text-muted)' }}>Coming soon — your personal galaxy awaits.</p>
+      </div>
+    </div>
+  );
+}
+
 const pageComponents: Record<PageId, React.FC> = {
   dashboard: Dashboard,
   calendar: CalendarPage,
@@ -21,14 +35,15 @@ const pageComponents: Record<PageId, React.FC> = {
   analytics: AnalyticsPage,
   revision: RevisionPage,
   goals: GoalsPage,
+  universe: UniversePlaceholder,
   settings: SettingsPage,
 };
 
 const pageTransition = {
-  initial: { opacity: 0, y: 12 },
+  initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -12 },
-  transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] as const },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
 };
 
 export default function App() {
@@ -55,6 +70,7 @@ export default function App() {
 
   return (
     <>
+      <StarfieldBackground />
       <Sidebar />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <AnimatePresence mode="wait">
