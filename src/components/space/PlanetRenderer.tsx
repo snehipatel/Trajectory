@@ -1,4 +1,156 @@
-import { useMemo } from 'react';
+import { useRef, useEffect } from 'react';
+
+// ── Helper: Blend two hex colors ──
+const getBlendedColor = (color1: string, color2: string, ratio: number) => {
+  const hex1 = color1.replace('#', '');
+  const r1 = parseInt(hex1.substring(0, 2), 16);
+  const g1 = parseInt(hex1.substring(2, 4), 16);
+  const b1 = parseInt(hex1.substring(4, 6), 16);
+
+  const hex2 = color2.replace('#', '');
+  const r2 = parseInt(hex2.substring(0, 2), 16);
+  const g2 = parseInt(hex2.substring(2, 4), 16);
+  const b2 = parseInt(hex2.substring(4, 6), 16);
+
+  const r = Math.round(r1 + (r2 - r1) * (1 - ratio));
+  const g = Math.round(g1 + (g2 - g1) * (1 - ratio));
+  const b = Math.round(b1 + (b2 - b1) * (1 - ratio));
+
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+// ── Helper: Generate 2D Offscreen Texture Map ──
+const generateTexture = (type: string, colors: string[], canvas: HTMLCanvasElement) => {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (type === 'gas') {
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, colors[2]);
+    grad.addColorStop(0.5, colors[1]);
+    grad.addColorStop(1, colors[2]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Smooth horizontal cloud bands
+    for (let i = 0; i < 6; i++) {
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.15)';
+      const bandY = (i * h) / 6;
+      const bandH = h / 6;
+      ctx.fillRect(0, bandY, w, bandH);
+
+      // Fine details
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.fillRect(0, bandY + bandH * 0.3, w, 2);
+    }
+  } else if (type === 'lava') {
+    // Dark lava rock base
+    ctx.fillStyle = '#0f0202';
+    ctx.fillRect(0, 0, w, h);
+
+    // Draw red/orange magma cracks
+    ctx.strokeStyle = '#ff3c00';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 20; i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * w, Math.random() * h);
+      ctx.lineTo(Math.random() * w, Math.random() * h);
+      ctx.stroke();
+    }
+
+    // Glowing core magma spots
+    for (let i = 0; i < 8; i++) {
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      const radGrad = ctx.createRadialGradient(x, y, 1, x, y, 12);
+      radGrad.addColorStop(0, '#ff9900');
+      radGrad.addColorStop(0.6, '#ff2200');
+      radGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = radGrad;
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (type === 'rocky') {
+    // Desert planet surface
+    ctx.fillStyle = colors[2];
+    ctx.fillRect(0, 0, w, h);
+
+    // Dark patches
+    for (let i = 0; i < 12; i++) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+      ctx.beginPath();
+      ctx.arc(Math.random() * w, Math.random() * h, 4 + Math.random() * 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Circular craters with shadows and rim highlights
+    for (let i = 0; i < 16; i++) {
+      const cx = Math.random() * w;
+      const cy = Math.random() * h;
+      const r = 2 + Math.random() * 4;
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.arc(cx + 0.5, cy + 0.5, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  } else if (type === 'ice') {
+    // Shimmering ice sheet gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#f0f9ff');
+    grad.addColorStop(0.5, colors[0]);
+    grad.addColorStop(1, '#bae6fd');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Fractal ice cracks
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 0.75;
+    for (let i = 0; i < 15; i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * w, Math.random() * h);
+      ctx.lineTo(Math.random() * w, Math.random() * h);
+      ctx.stroke();
+    }
+
+    // Polar glacier caps
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h * 0.15);
+    ctx.fillRect(0, h * 0.85, w, h * 0.15);
+  } else if (type === 'energy') {
+    // Nebulous energy swirls
+    ctx.fillStyle = colors[2];
+    ctx.fillRect(0, 0, w, h);
+
+    for (let i = 0; i < 6; i++) {
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      const radGrad = ctx.createRadialGradient(x, y, 2, x, y, 16);
+      radGrad.addColorStop(0, '#ffffff');
+      radGrad.addColorStop(0.5, colors[0]);
+      radGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = radGrad;
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    // Default
+    ctx.fillStyle = colors[1];
+    ctx.fillRect(0, 0, w, h);
+  }
+};
 
 // ── Planet visual styles mapped by subject name ──
 const PLANET_STYLES: Record<
@@ -45,7 +197,8 @@ export default function PlanetRenderer({
   const style = PLANET_STYLES[subjectName] || DEFAULT_STYLE;
   const hasRing = style.ring || false;
 
-  const gradientId = useMemo(() => `planet-grad-${subjectName.replace(/\s+/g, '-').toLowerCase()}`, [subjectName]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const orbitRadius = size * 0.72;
   const orbitStroke = Math.max(2, size * 0.03);
   const planetRadius = size * 0.35;
@@ -56,146 +209,358 @@ export default function PlanetRenderer({
   const circumference = 2 * Math.PI * orbitRadius;
   const dashOffset = circumference * (1 - completion / 100);
 
-  // Render planet texture shapes clipped inside the planet sphere
-  const renderTexture = () => {
-    switch (style.texture) {
-      case 'crystal':
-        return (
-          <g opacity={0.15}>
-            <polygon points={`${center},${center - planetRadius} ${center - planetRadius * 0.4},${center - planetRadius * 0.3} ${center},${center}`} fill="#ffffff" />
-            <polygon points={`${center - planetRadius},${center} ${center - planetRadius * 0.4},${center - planetRadius * 0.3} ${center},${center}`} fill="#000000" />
-            <polygon points={`${center - planetRadius},${center} ${center - planetRadius * 0.5},${center + planetRadius * 0.4} ${center},${center}`} fill="#ffffff" />
-            <polygon points={`${center},${center + planetRadius} ${center - planetRadius * 0.5},${center + planetRadius * 0.4} ${center},${center}`} fill="#000000" />
-            <polygon points={`${center},${center + planetRadius} ${center + planetRadius * 0.4},${center + planetRadius * 0.3} ${center},${center}`} fill="#ffffff" />
-            <polygon points={`${center + planetRadius},${center} ${center + planetRadius * 0.4},${center + planetRadius * 0.3} ${center},${center}`} fill="#000000" />
-            <polygon points={`${center + planetRadius},${center} ${center + planetRadius * 0.5},${center - planetRadius * 0.4} ${center},${center}`} fill="#ffffff" />
-            <polygon points={`${center},${center - planetRadius} ${center + planetRadius * 0.5},${center - planetRadius * 0.4} ${center},${center}`} fill="#000000" />
-          </g>
-        );
-      case 'cyber':
-        return (
-          <g opacity={0.35}>
-            <line x1={center - planetRadius} y1={center - planetRadius * 0.5} x2={center + planetRadius} y2={center - planetRadius * 0.5} stroke="#ffffff" strokeWidth={0.5} strokeDasharray="2 3" />
-            <line x1={center - planetRadius} y1={center + planetRadius * 0.5} x2={center + planetRadius} y2={center + planetRadius * 0.5} stroke="#ffffff" strokeWidth={0.5} strokeDasharray="2 3" />
-            <line x1={center - planetRadius * 0.5} y1={center - planetRadius} x2={center - planetRadius * 0.5} y2={center + planetRadius} stroke="#ffffff" strokeWidth={0.5} strokeDasharray="2 3" />
-            <line x1={center + planetRadius * 0.5} y1={center - planetRadius} x2={center + planetRadius * 0.5} y2={center + planetRadius} stroke="#ffffff" strokeWidth={0.5} strokeDasharray="2 3" />
-            
-            <circle cx={center} cy={center} r={planetRadius * 0.65} fill="none" stroke="#ffffff" strokeWidth={0.75} strokeDasharray="4 6" />
-            <circle cx={center} cy={center} r={planetRadius * 0.35} fill="none" stroke="#ffffff" strokeWidth={0.5} opacity={0.4} />
-            
-            <circle cx={center - planetRadius * 0.3} cy={center - planetRadius * 0.3} r={1.5} fill="#ffffff" />
-            <circle cx={center + planetRadius * 0.4} cy={center + planetRadius * 0.2} r={1.5} fill="#ffffff" />
-          </g>
-        );
-      case 'lava':
-        return (
-          <g opacity={0.5}>
-            <path d={`M ${center - planetRadius} ${center - planetRadius * 0.15} Q ${center - planetRadius * 0.4} ${center - planetRadius * 0.45} ${center} ${center - planetRadius * 0.05} T ${center + planetRadius} ${center - planetRadius * 0.25}`} fill="none" stroke="#FFA500" strokeWidth={2} style={{ filter: `drop-shadow(0 0 2px #FF4500)` }} />
-            <path d={`M ${center - planetRadius * 0.8} ${center + planetRadius * 0.3} Q ${center} ${center + planetRadius * 0.1} ${center + planetRadius * 0.5} ${center + planetRadius * 0.5} T ${center + planetRadius} ${center + planetRadius * 0.15}`} fill="none" stroke="#FF4500" strokeWidth={1.5} style={{ filter: `drop-shadow(0 0 1px #FF0000)` }} />
-            <path d={`M ${center - planetRadius * 0.2} ${center - planetRadius * 0.8} Q ${center + planetRadius * 0.3} ${center - planetRadius * 0.2} ${center + planetRadius * 0.1} ${center + planetRadius * 0.2}`} fill="none" stroke="#FFA500" strokeWidth={1} />
-          </g>
-        );
-      case 'energy':
-        return (
-          <g opacity={0.4}>
-            <path d={`M ${center - planetRadius} ${center} C ${center - planetRadius * 0.5} ${center - planetRadius * 0.7} ${center + planetRadius * 0.5} ${center + planetRadius * 0.7} ${center + planetRadius} ${center}`} fill="none" stroke="#ffffff" strokeWidth={1.5} />
-            <path d={`M ${center - planetRadius * 0.8} ${center + planetRadius * 0.4} C ${center - planetRadius * 0.2} ${center - planetRadius * 0.4} ${center + planetRadius * 0.2} ${center + planetRadius * 0.4} ${center + planetRadius * 0.8} ${center - planetRadius * 0.4}`} fill="none" stroke="#ffffff" strokeWidth={1} opacity={0.7} />
-            <circle cx={center} cy={center} r={planetRadius * 0.8} fill="none" stroke="#ffffff" strokeWidth={0.5} strokeDasharray="10 15" />
-          </g>
-        );
-      case 'gas':
-        return (
-          <g opacity={0.35}>
-            <path d={`M ${center - planetRadius} ${center - planetRadius * 0.5} Q ${center} ${center - planetRadius * 0.4} ${center + planetRadius} ${center - planetRadius * 0.5} L ${center + planetRadius} ${center - planetRadius * 0.2} Q ${center} ${center - planetRadius * 0.1} ${center - planetRadius} ${center - planetRadius * 0.2} Z`} fill="#ffffff" />
-            <path d={`M ${center - planetRadius} ${center - planetRadius * 0.05} Q ${center} ${center + planetRadius * 0.05} ${center + planetRadius} ${center - planetRadius * 0.05} L ${center + planetRadius} ${center + planetRadius * 0.2} Q ${center} ${center + planetRadius * 0.3} ${center - planetRadius} ${center + planetRadius * 0.2} Z`} fill="#000000" opacity={0.6} />
-            <path d={`M ${center - planetRadius} ${center + planetRadius * 0.45} Q ${center} ${center + planetRadius * 0.55} ${center + planetRadius} ${center + planetRadius * 0.45} L ${center + planetRadius} ${center + planetRadius * 0.65} Q ${center} ${center + planetRadius * 0.75} ${center - planetRadius} ${center + planetRadius * 0.65} Z`} fill="#ffffff" />
-          </g>
-        );
-      case 'rocky':
-        return (
-          <g opacity={0.3}>
-            <g transform={`translate(${center - planetRadius * 0.45}, ${center - planetRadius * 0.3})`}>
-              <circle cx={0} cy={0} r={planetRadius * 0.16} fill="#000000" opacity={0.7} />
-              <circle cx={-0.5} cy={-0.5} r={planetRadius * 0.16} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={0.5} />
-            </g>
-            <g transform={`translate(${center + planetRadius * 0.35}, ${center - planetRadius * 0.45})`}>
-              <circle cx={0} cy={0} r={planetRadius * 0.11} fill="#000000" opacity={0.7} />
-              <circle cx={-0.5} cy={-0.5} r={planetRadius * 0.11} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={0.5} />
-            </g>
-            <g transform={`translate(${center + planetRadius * 0.4}, ${center + planetRadius * 0.3})`}>
-              <circle cx={0} cy={0} r={planetRadius * 0.14} fill="#000000" opacity={0.7} />
-              <circle cx={-0.5} cy={-0.5} r={planetRadius * 0.14} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={0.5} />
-            </g>
-            <g transform={`translate(${center - planetRadius * 0.35}, ${center + planetRadius * 0.45})`}>
-              <circle cx={0} cy={0} r={planetRadius * 0.09} fill="#000000" opacity={0.7} />
-              <circle cx={-0.5} cy={-0.5} r={planetRadius * 0.09} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={0.5} />
-            </g>
-          </g>
-        );
-      case 'ice':
-        return (
-          <g>
-            <g opacity={0.25} stroke="#ffffff" strokeWidth={1} fill="none">
-              <path d={`M ${center - planetRadius * 0.7} ${center - planetRadius * 0.5} L ${center - planetRadius * 0.3} ${center - planetRadius * 0.2} L ${center - planetRadius * 0.2} ${center - planetRadius * 0.6}`} />
-              <path d={`M ${center + planetRadius * 0.2} ${center - planetRadius * 0.6} L ${center + planetRadius * 0.5} ${center - planetRadius * 0.3} L ${center + planetRadius * 0.7} ${center - planetRadius * 0.5}`} />
-              <path d={`M ${center - planetRadius * 0.5} ${center + planetRadius * 0.3} L ${center} ${center + planetRadius * 0.1} L ${center + planetRadius * 0.4} ${center + planetRadius * 0.4}`} />
-              <path d={`M ${center - planetRadius * 0.1} ${center - planetRadius * 0.2} L ${center + planetRadius * 0.2} ${center + planetRadius * 0.1} L ${center + planetRadius * 0.1} ${center + planetRadius * 0.4}`} />
-            </g>
-            <path d={`M ${center - planetRadius * 0.71} ${center - planetRadius * 0.71} A ${planetRadius} ${planetRadius} 0 0 1 ${center + planetRadius * 0.71} ${center - planetRadius * 0.71} Z`} fill="#ffffff" opacity={0.3} />
-            <path d={`M ${center - planetRadius * 0.71} ${center + planetRadius * 0.71} A ${planetRadius} ${planetRadius} 0 0 0 ${center + planetRadius * 0.71} ${center + planetRadius * 0.71} Z`} fill="#ffffff" opacity={0.2} />
-          </g>
-        );
-      default:
-        return null;
+  // Initialize and run the 3D rendering pipeline
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Use devicePixelRatio for rendering sharpness
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = svgSize * dpr;
+    canvas.height = svgSize * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Setup offscreen canvas for rendering sphere pixels cleanly
+    const radius = planetRadius;
+    const diameter = Math.floor(radius * 2);
+    const sphereCanvas = document.createElement('canvas');
+    sphereCanvas.width = diameter;
+    sphereCanvas.height = diameter;
+    const sphereCtx = sphereCanvas.getContext('2d')!;
+    const sphereImageData = sphereCtx.createImageData(diameter, diameter);
+    const data = sphereImageData.data;
+
+    // Generate texture map offscreen
+    const textureCanvas = document.createElement('canvas');
+    textureCanvas.width = 128;
+    textureCanvas.height = 64;
+    generateTexture(style.texture, style.gradient, textureCanvas);
+    const textureCtx = textureCanvas.getContext('2d')!;
+    const tw = textureCanvas.width;
+    const th = textureCanvas.height;
+    const textureData = textureCtx.getImageData(0, 0, tw, th);
+    const texPixels = textureData.data;
+
+    // Pre-calculate 3D sphere coordinate cache
+    const cache: { x: number; y: number; dx: number; dy: number; dz: number }[] = [];
+    for (let y = 0; y < diameter; y++) {
+      const dy = (y - radius) / radius;
+      for (let x = 0; x < diameter; x++) {
+        const dx = (x - radius) / radius;
+        const distSq = dx * dx + dy * dy;
+        if (distSq <= 1) {
+          const dz = Math.sqrt(1 - distSq);
+          cache.push({ x, y, dx, dy, dz });
+        }
+      }
     }
-  };
 
-  const renderRings = (isFront: boolean) => {
-    if (!hasRing) return null;
-    const ringStroke1 = Math.max(1, planetRadius * 0.05);
-    const ringStroke2 = Math.max(1.5, planetRadius * 0.12);
+    // 3D vector parameters
+    const lx = -0.4;
+    const ly = -0.4;
+    const lz = 0.82;
+    const lLength = Math.sqrt(lx * lx + ly * ly + lz * lz);
+    const nlx = lx / lLength;
+    const nly = ly / lLength;
+    const nlz = lz / lLength;
 
-    return (
-      <g
-        transform={`rotate(-15 ${center} ${center})`}
-        clipPath={isFront ? `url(#${gradientId}-front-clip)` : undefined}
-      >
-        {/* Inner shadow/ring */}
-        <ellipse
-          cx={center}
-          cy={center}
-          rx={planetRadius * 1.3}
-          ry={planetRadius * 0.3}
-          fill="none"
-          stroke={`${style.gradient[0]}25`}
-          strokeWidth={ringStroke1}
-        />
-        {/* Main glowing ring */}
-        <ellipse
-          cx={center}
-          cy={center}
-          rx={planetRadius * 1.6}
-          ry={planetRadius * 0.35}
-          fill="none"
-          stroke={`url(#${gradientId}-ring-grad)`}
-          strokeWidth={ringStroke2}
-          style={{
-            filter: `drop-shadow(0 0 3px ${style.glow})`,
-          }}
-        />
-        {/* Outer thin ring */}
-        <ellipse
-          cx={center}
-          cy={center}
-          rx={planetRadius * 1.85}
-          ry={planetRadius * 0.4}
-          fill="none"
-          stroke={`${style.gradient[1]}35`}
-          strokeWidth={ringStroke1}
-        />
-      </g>
-    );
-  };
+    const tiltAngle = -0.26; // ~15 degrees tilt
+    const cosF = Math.cos(tiltAngle);
+    const sinF = Math.sin(tiltAngle);
+
+    // 3D Icosahedron for gem/crystal styles
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const rawVertices: [number, number, number][] = [
+      [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
+      [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
+      [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]
+    ];
+    const icosaVertices = rawVertices.map(v => {
+      const len = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+      return [v[0] / len, v[1] / len, v[2] / len] as [number, number, number];
+    });
+    const icosaFaces: [number, number, number][] = [
+      [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+      [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+      [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+      [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+    ];
+
+    let animationId: number;
+    let theta = 0;
+
+    // Split ring clipping logic (front vs back of planet)
+    const clipToHalf = (c: CanvasRenderingContext2D, isFront: boolean) => {
+      c.beginPath();
+      c.translate(center, center);
+      c.rotate((-15 * Math.PI) / 180);
+      if (isFront) {
+        c.rect(-svgSize, -1, svgSize * 2, svgSize * 1.5);
+      } else {
+        c.rect(-svgSize, -svgSize * 1.5, svgSize * 2, svgSize * 1.5 + 1);
+      }
+      c.rotate((15 * Math.PI) / 180);
+      c.translate(-center, -center);
+      c.clip();
+    };
+
+    const drawRings = (c: CanvasRenderingContext2D) => {
+      const ringStroke1 = Math.max(1, radius * 0.05);
+      const ringStroke2 = Math.max(1.5, radius * 0.12);
+
+      c.save();
+      c.translate(center, center);
+      c.rotate((-15 * Math.PI) / 180);
+
+      // Outer thin ring
+      c.strokeStyle = `${style.gradient[1]}30`;
+      c.lineWidth = ringStroke1;
+      c.beginPath();
+      c.ellipse(0, 0, radius * 1.85, radius * 0.4, 0, 0, Math.PI * 2);
+      c.stroke();
+
+      // Main ring
+      const ringGrad = c.createLinearGradient(-radius * 1.6, 0, radius * 1.6, 0);
+      ringGrad.addColorStop(0, style.gradient[0]);
+      ringGrad.addColorStop(0.5, style.gradient[1]);
+      ringGrad.addColorStop(1, `${style.gradient[2]}40`);
+      c.strokeStyle = ringGrad;
+      c.lineWidth = ringStroke2;
+      c.beginPath();
+      c.ellipse(0, 0, radius * 1.6, radius * 0.35, 0, 0, Math.PI * 2);
+      c.stroke();
+
+      // Inner ring
+      c.strokeStyle = `${style.gradient[0]}20`;
+      c.lineWidth = ringStroke1;
+      c.beginPath();
+      c.ellipse(0, 0, radius * 1.3, radius * 0.3, 0, 0, Math.PI * 2);
+      c.stroke();
+
+      c.restore();
+    };
+
+    const renderFrame = () => {
+      theta += animated ? 0.005 : 0;
+
+      // Clear Canvas
+      ctx.clearRect(0, 0, svgSize, svgSize);
+
+      // 1. Draw back half of the rings
+      if (hasRing) {
+        ctx.save();
+        clipToHalf(ctx, false);
+        drawRings(ctx);
+        ctx.restore();
+      }
+
+      // 2. Draw 3D planet body
+      if (style.texture === 'crystal') {
+        // Flat-shaded 3D Gem facet renderer
+        const cosT = Math.cos(theta);
+        const sinT = Math.sin(theta);
+
+        const rotatedVertices = icosaVertices.map(v => {
+          const x1 = v[0] * cosT + v[2] * sinT;
+          const y1 = v[1];
+          const z1 = -v[0] * sinT + v[2] * cosT;
+
+          const rx = x1 * cosF - y1 * sinF;
+          const ry = x1 * sinF + y1 * cosF;
+          const rz = z1;
+          return [rx, ry, rz] as [number, number, number];
+        });
+
+        // Painers depth sorting
+        const faceDepths = icosaFaces.map((face, index) => {
+          const zSum = rotatedVertices[face[0]][2] + rotatedVertices[face[1]][2] + rotatedVertices[face[2]][2];
+          return { index, depth: zSum / 3 };
+        });
+        faceDepths.sort((a, b) => a.depth - b.depth);
+
+        for (const fd of faceDepths) {
+          const face = icosaFaces[fd.index];
+          const v0 = rotatedVertices[face[0]];
+          const v1 = rotatedVertices[face[1]];
+          const v2 = rotatedVertices[face[2]];
+
+          // Backface culling
+          const ux = v1[0] - v0[0];
+          const uy = v1[1] - v0[1];
+          const uz = v1[2] - v0[2];
+          const vx = v2[0] - v0[0];
+          const vy = v2[1] - v0[1];
+          const vz = v2[2] - v0[2];
+          const nz = ux * vy - uy * vx;
+          if (nz <= 0) continue;
+
+          // Normalize normal
+          const nx = uy * vz - uz * vy;
+          const ny = uz * vx - ux * vz;
+          const nLen = Math.sqrt(nx * nx + ny * ny + nz * nz);
+          const nnx = nx / nLen;
+          const nny = ny / nLen;
+          const nnz = nz / nLen;
+
+          const dot = nnx * nlx + nny * nly + nnz * nlz;
+          const intensity = Math.max(0.1, dot);
+
+          ctx.beginPath();
+          ctx.moveTo(center + v0[0] * radius, center + v0[1] * radius);
+          ctx.lineTo(center + v1[0] * radius, center + v1[1] * radius);
+          ctx.lineTo(center + v2[0] * radius, center + v2[1] * radius);
+          ctx.closePath();
+
+          ctx.fillStyle = getBlendedColor(style.gradient[0], style.gradient[2], intensity);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      } else if (style.texture === 'cyber') {
+        // Holographic 3D projected wireframe grid
+        const cosT = Math.cos(theta);
+        const sinT = Math.sin(theta);
+
+        // Draw latitude rings
+        ctx.lineWidth = 0.75;
+        for (let lat = -0.8; lat <= 0.8; lat += 0.2) {
+          const latRadius = Math.sqrt(1 - lat * lat);
+          ctx.beginPath();
+          let first = true;
+          for (let deg = 0; deg <= 360; deg += 10) {
+            const rad = (deg * Math.PI) / 180;
+            const px = latRadius * Math.cos(rad);
+            const py = lat;
+            const pz = latRadius * Math.sin(rad);
+
+            const rx = px * cosT + pz * sinT;
+            const ry = py;
+            const rz = -px * sinT + pz * cosT;
+
+            const tx = rx * cosF - ry * sinF;
+            const ty = rx * sinF + ry * cosF;
+            const tz = rz;
+
+            ctx.strokeStyle = tz > 0 ? `${color}bb` : `${color}20`;
+            const cx = center + tx * radius;
+            const cy = center + ty * radius;
+
+            if (first) {
+              ctx.moveTo(cx, cy);
+              first = false;
+            } else {
+              ctx.lineTo(cx, cy);
+            }
+          }
+          ctx.stroke();
+        }
+
+        // Draw longitude rings
+        for (let lon = 0; lon < 180; lon += 30) {
+          const lonRad = (lon * Math.PI) / 180;
+          ctx.beginPath();
+          let first = true;
+          for (let deg = 0; deg <= 360; deg += 10) {
+            const rad = (deg * Math.PI) / 180;
+            const px = Math.cos(rad) * Math.cos(lonRad);
+            const py = Math.sin(rad);
+            const pz = Math.cos(rad) * Math.sin(lonRad);
+
+            const rx = px * cosT + pz * sinT;
+            const ry = py;
+            const rz = -px * sinT + pz * cosT;
+
+            const tx = rx * cosF - ry * sinF;
+            const ty = rx * sinF + ry * cosF;
+            const tz = rz;
+
+            ctx.strokeStyle = tz > 0 ? `${color}99` : `${color}15`;
+            const cx = center + tx * radius;
+            const cy = center + ty * radius;
+
+            if (first) {
+              ctx.moveTo(cx, cy);
+              first = false;
+            } else {
+              ctx.lineTo(cx, cy);
+            }
+          }
+          ctx.stroke();
+        }
+      } else {
+        // Pixel shader / texture projected rotating 3D sphere
+        const cosT = Math.cos(theta);
+        const sinT = Math.sin(theta);
+
+        for (let i = 0; i < cache.length; i++) {
+          const p = cache[i];
+
+          // Rotate around Y
+          const rx = p.dx * cosT + p.dz * sinT;
+          const ry = p.dy;
+          const rz = -p.dx * sinT + p.dz * cosT;
+
+          // Rotate around Z (tilt)
+          const tx = rx * cosF - ry * sinF;
+          const ty = rx * sinF + ry * cosF;
+          const tz = rz;
+
+          // Map to 2D texture coordinates
+          const v = Math.asin(ty) / Math.PI + 0.5;
+          const u = Math.atan2(tx, tz) / (Math.PI * 2) + 0.5;
+
+          const tx_pixel = Math.floor(u * tw) % tw;
+          const ty_pixel = Math.floor(v * th) % th;
+          const texIdx = (ty_pixel * tw + tx_pixel) * 4;
+
+          // Lighting calculations (surface normal is [tx, ty, tz])
+          const dot = tx * nlx + ty * nly + tz * nlz;
+          const diffuse = Math.max(0, dot);
+
+          // Specular highlights
+          const rz_refl = 2 * diffuse * tz - nlz;
+          const specular = Math.pow(Math.max(0, rz_refl), 12) * 0.35;
+
+          const ambient = 0.12;
+          const lightFactor = ambient + 0.88 * diffuse;
+
+          const pixelIdx = (p.y * diameter + p.x) * 4;
+          data[pixelIdx] = Math.min(255, texPixels[texIdx] * lightFactor + specular * 255);
+          data[pixelIdx + 1] = Math.min(255, texPixels[texIdx + 1] * lightFactor + specular * 255);
+          data[pixelIdx + 2] = Math.min(255, texPixels[texIdx + 2] * lightFactor + specular * 255);
+          data[pixelIdx + 3] = 255;
+        }
+        sphereCtx.putImageData(sphereImageData, 0, 0);
+
+        // Blit back onto the main canvas with hardware blend/anti-aliasing
+        ctx.drawImage(sphereCanvas, center - radius, center - radius);
+      }
+
+      // 3. Draw front half of the rings
+      if (hasRing) {
+        ctx.save();
+        clipToHalf(ctx, true);
+        drawRings(ctx);
+        ctx.restore();
+      }
+
+      if (animated) {
+        animationId = requestAnimationFrame(renderFrame);
+      }
+    };
+
+    renderFrame();
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [style, animated, planetRadius, svgSize, center, color]);
 
   return (
     <div
@@ -213,58 +578,26 @@ export default function PlanetRenderer({
           position: 'relative',
         }}
       >
+        {/* Canvas overlay for true 3D rotating model */}
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: svgSize,
+            height: svgSize,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+
         <svg
           width={svgSize}
           height={svgSize}
           viewBox={`0 0 ${svgSize} ${svgSize}`}
-          style={{ overflow: 'visible' }}
+          style={{ overflow: 'visible', position: 'relative', zIndex: 2, pointerEvents: 'none' }}
         >
-          <defs>
-            {/* Planet radial gradient */}
-            <radialGradient id={gradientId} cx="35%" cy="35%" r="65%">
-              <stop offset="0%" stopColor={style.gradient[0]} />
-              <stop offset="50%" stopColor={style.gradient[1]} />
-              <stop offset="100%" stopColor={style.gradient[2]} />
-            </radialGradient>
-            
-            {/* Shadow gradient for dark side / 3D sphere shape */}
-            <radialGradient id={`${gradientId}-shadow`} cx="70%" cy="70%" r="60%">
-              <stop offset="0%" stopColor="rgba(0,0,0,0)" />
-              <stop offset="40%" stopColor="rgba(0,0,0,0.35)" />
-              <stop offset="100%" stopColor="rgba(0,0,0,0.85)" />
-            </radialGradient>
-
-            {/* Specular Highlight radial gradient */}
-            <radialGradient id={`${gradientId}-specular`} cx="30%" cy="30%" r="35%">
-              <stop offset="0%" stopColor="rgba(255, 255, 255, 0.45)" />
-              <stop offset="40%" stopColor="rgba(255, 255, 255, 0.15)" />
-              <stop offset="100%" stopColor="rgba(255, 255, 255, 0)" />
-            </radialGradient>
-
-            {/* Ring gradient */}
-            <linearGradient id={`${gradientId}-ring-grad`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={style.gradient[0]} />
-              <stop offset="50%" stopColor={style.gradient[1]} />
-              <stop offset="100%" stopColor={`${style.gradient[2]}40`} />
-            </linearGradient>
-
-            {/* Mask to clip textures perfectly inside the planet sphere */}
-            <mask id={`${gradientId}-mask`}>
-              <circle cx={center} cy={center} r={planetRadius} fill="#ffffff" />
-            </mask>
-
-            {/* ClipPath for front of Saturn-like rings */}
-            <clipPath id={`${gradientId}-front-clip`}>
-              <rect
-                x={center - size}
-                y={center - size * 0.05}
-                width={size * 2}
-                height={size}
-                transform={`rotate(-15 ${center} ${center})`}
-              />
-            </clipPath>
-          </defs>
-
           {/* Orbit track */}
           {showOrbit && (
             <>
@@ -296,55 +629,7 @@ export default function PlanetRenderer({
             </>
           )}
 
-          {/* Back half of the ring (drawn behind planet) */}
-          {renderRings(false)}
-
-          {/* Planet body circle */}
-          <circle
-            cx={center}
-            cy={center}
-            r={planetRadius}
-            fill={`url(#${gradientId})`}
-          />
-
-          {/* Planet surface texture (masked to sphere) */}
-          <g mask={`url(#${gradientId}-mask)`}>
-            {renderTexture()}
-          </g>
-
-          {/* Dark side / terminator overlay (masked to sphere) */}
-          <circle
-            cx={center}
-            cy={center}
-            r={planetRadius}
-            fill={`url(#${gradientId}-shadow)`}
-            pointerEvents="none"
-          />
-
-          {/* Specular highlight (glowing 3D reflect overlay) */}
-          <circle
-            cx={center}
-            cy={center}
-            r={planetRadius}
-            fill={`url(#${gradientId}-specular)`}
-            pointerEvents="none"
-          />
-
-          {/* Atmosphere rim light glow */}
-          <circle
-            cx={center}
-            cy={center}
-            r={planetRadius}
-            fill="none"
-            stroke="rgba(255, 255, 255, 0.35)"
-            strokeWidth={1}
-            pointerEvents="none"
-          />
-
-          {/* Front half of the ring (drawn in front of planet) */}
-          {renderRings(true)}
-
-          {/* Atmosphere glow circle */}
+          {/* Atmosphere outer glow overlay (pulsing) */}
           <circle
             cx={center}
             cy={center}
@@ -352,7 +637,7 @@ export default function PlanetRenderer({
             fill="none"
             stroke={style.gradient[0]}
             strokeWidth={1}
-            opacity={0.3}
+            opacity={0.25}
             style={animated ? {
               animation: 'pulse-subtle 4s ease-in-out infinite',
             } : undefined}
@@ -372,6 +657,7 @@ export default function PlanetRenderer({
               fontWeight: 700,
               color: color,
               textShadow: `0 0 8px ${style.glow}`,
+              zIndex: 3,
             }}
           >
             {completion}%
@@ -397,3 +683,4 @@ export default function PlanetRenderer({
     </div>
   );
 }
+
