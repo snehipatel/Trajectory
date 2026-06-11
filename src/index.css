@@ -299,6 +299,12 @@ body {
   gap: 20px;
 }
 
+.grid-subjects {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
 /* ── Heatmap — Space Themed ── */
 .heatmap-cell {
   border-radius: 3px;
@@ -651,6 +657,9 @@ body {
   .grid-stats {
     grid-template-columns: repeat(2, 1fr);
   }
+  .grid-subjects {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -675,12 +684,22 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .grid-subjects {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .page-header h1 {
     font-size: 22px;
   }
 
   .stat-card .stat-value {
     font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-subjects {
+    grid-template-columns: 1fr;
   }
 }
 

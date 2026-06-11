@@ -342,11 +342,7 @@ export default function SubjectsPage() {
         </p>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-        gap: 16,
-      }}>
+      <div className="grid-subjects">
         {subjects.map((subject) => (
           <SubjectCard
             key={subject.id}
