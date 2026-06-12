@@ -212,9 +212,9 @@ export default function AnalyticsPage() {
       {/* Completion Stats */}
       <motion.div className="grid-stats" variants={fadeUp} initial="hidden" animate="show" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 24 }}>
         {[
-          { label: 'Lectures Completed', value: `${completionStats.compLec}/${completionStats.totalLec}`, icon: BookOpen, bg: 'rgba(129, 140, 248, 0.1)', color: '#818CF8' },
-          { label: 'DPPs Completed', value: `${completionStats.compDpp}/${completionStats.totalDpp}`, icon: FileText, bg: 'rgba(168, 85, 247, 0.1)', color: '#A855F7' },
-          { label: 'Custom Tasks', value: completionStats.tasks, icon: CheckSquare, bg: 'rgba(52, 211, 153, 0.1)', color: '#34D399' },
+          { label: 'Lectures Completed', value: `${completionStats.compLec}/${completionStats.totalLec}`, icon: BookOpen, bg: '#EEF2FF', color: '#6366F1' },
+          { label: 'DPPs Completed', value: `${completionStats.compDpp}/${completionStats.totalDpp}`, icon: FileText, bg: '#F5F3FF', color: '#8B5CF6' },
+          { label: 'Custom Tasks', value: completionStats.tasks, icon: CheckSquare, bg: '#ECFDF5', color: '#059669' },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
@@ -245,10 +245,10 @@ export default function AnalyticsPage() {
             <div style={{ height: Math.max(coverageData.length * 48, 200) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={coverageData} layout="vertical" barSize={20}>
-                  <XAxis type="number" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} unit="%" />
-                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fill: '#94A3B8', fontWeight: 500 }} width={40} />
+                  <XAxis type="number" domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} unit="%" />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 13, fill: '#6B7280', fontWeight: 500 }} width={40} />
                   <Tooltip
-                    contentStyle={{ background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: 10, color: '#E2E8F0', fontSize: 13, padding: '8px 14px' }}
+                    contentStyle={{ background: '#1A1D23', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, padding: '8px 14px' }}
                     formatter={(value: any, _name: any, props: any) => [`${value}% (Lec: ${props.payload.lectures}, DPP: ${props.payload.dpps})`, props.payload.fullName]}
                   />
                   <Bar dataKey="percentage" radius={[0, 8, 8, 0]}>
@@ -280,7 +280,7 @@ export default function AnalyticsPage() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '12px 14px',
-                  background: subject.daysSince > 10 ? 'rgba(248, 113, 113, 0.08)' : subject.daysSince > 7 ? 'rgba(251, 191, 36, 0.08)' : 'var(--color-bg-hover)',
+                  background: subject.daysSince > 10 ? '#FEF2F2' : subject.daysSince > 7 ? '#FFFBEB' : 'var(--color-bg-hover)',
                   borderRadius: 10,
                 }}
               >
@@ -360,10 +360,10 @@ export default function AnalyticsPage() {
             <div style={{ height: 280 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
-                  <PolarGrid stroke="rgba(148, 163, 184, 0.1)" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: '#94A3B8' }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: '#64748B' }} />
-                  <Radar name="Readiness" dataKey="readiness" stroke="#818CF8" fill="#818CF8" fillOpacity={0.15} strokeWidth={2} />
+                  <PolarGrid stroke="#E5E7EB" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: '#6B7280' }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: '#9CA3AF' }} />
+                  <Radar name="Readiness" dataKey="readiness" stroke="#6366F1" fill="#6366F1" fillOpacity={0.2} strokeWidth={2} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
@@ -394,11 +394,11 @@ export default function AnalyticsPage() {
         <div style={{ height: 280 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.08)" />
-              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9CA3AF' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ background: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: 10, color: '#E2E8F0', fontSize: 13, padding: '8px 14px' }}
+                contentStyle={{ background: '#1A1D23', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, padding: '8px 14px' }}
                 formatter={(value: any) => [`${value} activities`, 'Count']}
               />
               <defs>
@@ -410,10 +410,10 @@ export default function AnalyticsPage() {
               <Line
                 type="monotone"
                 dataKey="count"
-                stroke="#818CF8"
+                stroke="#6366F1"
                 strokeWidth={2.5}
-                dot={{ fill: '#818CF8', r: 4 }}
-                activeDot={{ r: 6, stroke: '#0F172A', strokeWidth: 2 }}
+                dot={{ fill: '#6366F1', r: 4 }}
+                activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>

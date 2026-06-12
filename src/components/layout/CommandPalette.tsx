@@ -12,7 +12,6 @@ import {
   Settings,
   ScrollText,
   RefreshCw,
-  Globe,
   ArrowRight,
 } from 'lucide-react';
 import useStore from '@/store/useStore';
@@ -35,7 +34,6 @@ const pageIcons: Record<PageId, React.FC<{ size?: number }>> = {
   analytics: BarChart3,
   revision: RefreshCw,
   goals: Target,
-  universe: Globe,
   settings: Settings,
 };
 
@@ -63,7 +61,6 @@ export default function CommandPalette() {
       { id: 'analytics', label: 'Analytics' },
       { id: 'revision', label: 'Revision Tracker' },
       { id: 'goals', label: 'Goals' },
-      { id: 'universe', label: 'Universe' },
       { id: 'settings', label: 'Settings' },
     ];
 

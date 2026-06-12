@@ -10,8 +10,7 @@ import {
   Settings,
   ChevronsLeft,
   ChevronsRight,
-  Globe,
-  Rocket,
+  Zap,
 } from 'lucide-react';
 import useStore from '@/store/useStore';
 import type { PageId } from '@/types';
@@ -30,7 +29,6 @@ const navItems: NavItem[] = [
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'revision', label: 'Revision Tracker', icon: RefreshCw },
   { id: 'goals', label: 'Goals', icon: Target },
-  { id: 'universe', label: 'Universe', icon: Globe },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -55,7 +53,7 @@ export default function Sidebar() {
           alignItems: 'center',
           gap: 12,
           justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-          borderBottom: '1px solid var(--color-border)',
+          borderBottom: '1px solid var(--color-border-light)',
           marginBottom: 8,
         }}
       >
@@ -64,15 +62,14 @@ export default function Sidebar() {
             width: 36,
             height: 36,
             borderRadius: 10,
-            background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.8), rgba(168, 85, 247, 0.8))',
+            background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            boxShadow: '0 0 16px rgba(129, 140, 248, 0.3)',
           }}
         >
-          <Rocket size={18} color="#fff" />
+          <Zap size={20} color="#fff" />
         </div>
         {!sidebarCollapsed && (
           <motion.div
@@ -114,7 +111,7 @@ export default function Sidebar() {
       <div
         style={{
           padding: 12,
-          borderTop: '1px solid var(--color-border)',
+          borderTop: '1px solid var(--color-border-light)',
           display: 'flex',
           justifyContent: sidebarCollapsed ? 'center' : 'flex-end',
         }}

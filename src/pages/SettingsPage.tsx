@@ -91,8 +91,8 @@ export default function SettingsPage() {
               <button
                 className="btn btn-sm"
                 style={{
-                  background: settings.revisionEnabled ? 'rgba(52, 211, 153, 0.12)' : 'var(--color-bg-hover)',
-                  color: settings.revisionEnabled ? '#34D399' : 'var(--color-text-muted)',
+                  background: settings.revisionEnabled ? '#ECFDF5' : 'var(--color-bg-hover)',
+                  color: settings.revisionEnabled ? '#059669' : 'var(--color-text-muted)',
                   minWidth: 60,
                   justifyContent: 'center',
                 }}
@@ -203,8 +203,8 @@ export default function SettingsPage() {
           {importStatus && (
             <div style={{
               padding: '10px 14px',
-              background: importStatus.includes('success') ? 'rgba(52, 211, 153, 0.12)' : 'rgba(248, 113, 113, 0.12)',
-              color: importStatus.includes('success') ? '#34D399' : '#F87171',
+              background: importStatus.includes('success') ? '#ECFDF5' : '#FEF2F2',
+              color: importStatus.includes('success') ? '#059669' : '#DC2626',
               borderRadius: 10,
               fontSize: 13,
               marginBottom: 16,
@@ -238,17 +238,17 @@ export default function SettingsPage() {
         </div>
 
         {/* Danger Zone */}
-        <div className="card" style={{ border: '1px solid rgba(248, 113, 113, 0.3)' }}>
-          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 20px 0', color: '#F87171', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="card" style={{ border: '1px solid #FCA5A5' }}>
+          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 20px 0', color: '#DC2626', display: 'flex', alignItems: 'center', gap: 8 }}>
             <AlertTriangle size={18} /> Danger Zone
           </h3>
           {!showResetConfirm ? (
-            <button className="btn" style={{ background: 'rgba(248, 113, 113, 0.12)', color: '#F87171' }} onClick={() => setShowResetConfirm(true)}>
+            <button className="btn" style={{ background: '#FEF2F2', color: '#DC2626' }} onClick={() => setShowResetConfirm(true)}>
               <Trash2 size={16} /> Reset All Data
             </button>
           ) : (
             <div>
-              <p style={{ fontSize: 14, color: '#F87171', marginBottom: 12, fontWeight: 500 }}>
+              <p style={{ fontSize: 14, color: '#DC2626', marginBottom: 12, fontWeight: 500 }}>
                 Are you sure? This will delete all your progress, logs, goals, and revisions.
               </p>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -273,8 +273,7 @@ export default function SettingsPage() {
               width: 44,
               height: 44,
               borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.8), rgba(168, 85, 247, 0.8))',
-              boxShadow: '0 0 16px rgba(129, 140, 248, 0.3)',
+              background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -283,11 +282,11 @@ export default function SettingsPage() {
             </div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 700 }}>Trajectory</div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Your personal space mission · v2.0.0</div>
+              <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>GATE Preparation Progress Tracker v1.0.0</div>
             </div>
           </div>
           <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-            A personal universe for GATE preparation. Track lectures, DPPs, revisions, and goals across your galactic journey.
+            A personal study tracking system designed for GATE preparation. Track lectures, DPPs, revisions, and goals with detailed analytics.
           </p>
           <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 8 }}>
             All data is stored locally in your browser. Use Export to back up your progress.

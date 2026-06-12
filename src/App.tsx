@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import StarfieldBackground from './components/space/StarfieldBackground';
 import Sidebar from './components/layout/Sidebar';
 import CommandPalette from './components/layout/CommandPalette';
 import Dashboard from './pages/Dashboard';
@@ -11,7 +10,6 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import RevisionPage from './pages/RevisionPage';
 import GoalsPage from './pages/GoalsPage';
 import SettingsPage from './pages/SettingsPage';
-import UniversePage from './pages/UniversePage';
 import useStore from './store/useStore';
 import type { PageId } from './types';
 
@@ -23,15 +21,14 @@ const pageComponents: Record<PageId, React.FC> = {
   analytics: AnalyticsPage,
   revision: RevisionPage,
   goals: GoalsPage,
-  universe: UniversePage,
   settings: SettingsPage,
 };
 
 const pageTransition = {
-  initial: { opacity: 0, y: 8 },
+  initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-  transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
+  exit: { opacity: 0, y: -12 },
+  transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] as const },
 };
 
 export default function App() {
@@ -58,7 +55,6 @@ export default function App() {
 
   return (
     <>
-      <StarfieldBackground />
       <Sidebar />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <AnimatePresence mode="wait">

@@ -170,5 +170,4 @@ export type PageId =
   | 'analytics'
   | 'revision'
   | 'goals'
-  | 'universe'
   | 'settings';

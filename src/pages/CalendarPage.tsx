@@ -22,7 +22,7 @@ function getHeatLevel(count: number) {
   return 3;
 }
 
-const levelColors = ['rgba(148, 163, 184, 0.06)', 'rgba(129, 140, 248, 0.15)', 'rgba(129, 140, 248, 0.3)', 'rgba(52, 211, 153, 0.3)'];
+const levelColors = ['#FEE2E2', '#FEF3C7', '#DBEAFE', '#BBF7D0'];
 const typeIcons = {
   lecture: BookOpen,
   dpp: FileText,
